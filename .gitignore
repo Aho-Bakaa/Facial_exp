@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Large model weights and checkpoints
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+experiments/
+hf_space/qlora_adapter/
+kaggle_deployment/downloaded_output/
+kaggle_deployment/upload_adapter_dataset/
+kaggle_deployment/last_run_output/
+kaggle_deployment/live_evaluator_kernel/
+
+# Large raw dataset files & archives (curated splits are in dataset_release/)
+input_data/
+*.zip
+*.tar.gz
+*.tar
+captions.json
+
+# Local runtime logs
+*.log
+
+# OS / Editor artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
