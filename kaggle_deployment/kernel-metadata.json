@@ -1,0 +1,18 @@
+{
+  "id": "goofybhatoora/celeb-vlm-hierarchical-causal-analysis",
+  "title": "Celeb VLM Hierarchical Causal Analysis",
+  "code_file": "celeb_vlm_benchmark.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": true,
+  "dataset_sources": [
+    "jessicali9530/celeba-dataset",
+    "goofybhatoora/celeb-vlm-trained-adapter"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}
