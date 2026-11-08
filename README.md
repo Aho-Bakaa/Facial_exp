@@ -66,6 +66,11 @@ Powered by fine-tuned **`Qwen2.5-VL-7B-Instruct`** using **4-bit NF4 QLoRA**, sy
    - **Global Portrait** ($224 \times 224$): Captures head pose, global lighting, and hairstyle.
    - **Periorbital Crop** ($112 \times 112$): Captures ocular tension, eye squinting (AU6/7), and eyeglasses frames.
    - **Oral Crop** ($112 \times 112$): Captures commissure elevation (AU12), dental exposure, and lip parting (AU25).
+* **Inter-Pupillary Distance (IPD)** = $\left\| p_{\text{right\_eye}} - p_{\text{left\_eye}} \right\|_2$[cite: 1]
+* **Mouth Width** = $\left\| p_{\text{right\_mouth}} - p_{\text{left\_mouth}} \right\|_2$[cite: 1]
+* **Mouth Aspect Ratio (MAR)**: $\text{MAR} = \frac{d_{\text{mouth}}}{d_{\text{eyes}}} \quad (\mu = 2.1307, \, \sigma = 1.1719)$[cite: 1]
+* **2D Head Roll Cant Angle**: $\theta_{\text{roll}} = \arctan2(\Delta y_{\text{eyes}}, \, \Delta x_{\text{eyes}}) \times \frac{180^\circ}{\pi} \quad (\mu = -0.0534^\circ, \, \sigma = 2.795^\circ)$[cite: 1]
+* **Eye Aspect Ratio (EAR)**: Palpebral aperture coefficient $(\mu = 0.2157, \, \sigma = 0.0179)$[cite: 1]
 3. **Evidence-First Anti-Hallucination Design (`src/prompt_builder.py`)**:
    Enforces emitting observable `visual_evidence` (Action Units) strictly before generating `inferred_cause`. Autoregressive attention forces the transformer to condition situational hypotheses on physical tokens.
 4. **Resilient 4-Bit NF4 QLoRA Fine-Tuning (`src/train_qlora.py`)**:
