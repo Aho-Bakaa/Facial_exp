@@ -66,16 +66,17 @@ Powered by fine-tuned **`Qwen2.5-VL-7B-Instruct`** using **4-bit NF4 QLoRA**, sy
    - **Global Portrait** ($224 \times 224$): Captures head pose, global lighting, and hairstyle.
    - **Periorbital Crop** ($112 \times 112$): Captures ocular tension, eye squinting (AU6/7), and eyeglasses frames.
    - **Oral Crop** ($112 \times 112$): Captures commissure elevation (AU12), dental exposure, and lip parting (AU25).
-* **Inter-Pupillary Distance (IPD)** = $\left\| p_{\text{right-eye}} - p_{\text{left-eye}} \right\|_2$
-* **Mouth Width** = $\left\| p_{\text{right-mouth}} - p_{\text{left-mouth}} \right\|_2$
-* **Mouth Aspect Ratio (MAR)**: $\text{MAR} = \frac{d_{\text{mouth}}}{d_{\text{eyes}}} \quad (\mu = 2.1307, \, \sigma = 1.1719)$
-* **2D Head Roll Cant Angle**: $\theta_{\text{roll}} = \arctan2(\Delta y_{\text{eyes}}, \, \Delta x_{\text{eyes}}) \times \frac{180^\circ}{\pi} \quad (\mu = -0.0534^\circ, \, \sigma = 2.795^\circ)$
-* **Eye Aspect Ratio (EAR)**: Palpebral aperture coefficient $(\mu = 0.2157, \, \sigma = 0.0179)$
-3. **Evidence-First Anti-Hallucination Design (`src/prompt_builder.py`)**:
+3. Mathematical metrics:
+  - **Inter-Pupillary Distance (IPD)** = $\left\| p_{\text{right-eye}} - p_{\text{left-eye}} \right\|_2$
+  - **Mouth Width** = $\left\| p_{\text{right-mouth}} - p_{\text{left-mouth}} \right\|_2$
+  - **Mouth Aspect Ratio (MAR)**: $\text{MAR} = \frac{d_{\text{mouth}}}{d_{\text{eyes}}} \quad (\mu = 2.1307, \, \sigma = 1.1719)$
+  - **2D Head Roll Cant Angle**: $\theta_{\text{roll}} = \arctan2(\Delta y_{\text{eyes}}, \, \Delta x_{\text{eyes}}) \times \frac{180^\circ}{\pi} \quad (\mu = -0.0534^\circ, \, \sigma = 2.795^\circ)$
+  - **Eye Aspect Ratio (EAR)**: Palpebral aperture coefficient $(\mu = 0.2157, \, \sigma = 0.0179)$
+4. **Evidence-First Anti-Hallucination Design (`src/prompt_builder.py`)**:
    Enforces emitting observable `visual_evidence` (Action Units) strictly before generating `inferred_cause`. Autoregressive attention forces the transformer to condition situational hypotheses on physical tokens.
-4. **Resilient 4-Bit NF4 QLoRA Fine-Tuning (`src/train_qlora.py`)**:
+5. **Resilient 4-Bit NF4 QLoRA Fine-Tuning (`src/train_qlora.py`)**:
    Adapts all linear projections (`q_proj`, `k_proj`, `v_proj`, `o_proj`, `gate_proj`, `up_proj`, `down_proj`) with paged 8-bit AdamW, double quantization, and gradient checkpointing, executing within 3.04 GB VRAM.
-5. **Constrained Decoding (`src/inference.py`)**:
+6. **Constrained Decoding (`src/inference.py`)**:
    The `JSONStructuralStopper` logits processor dynamically terminates generation as soon as the root JSON object balances, preventing infinite postambles without intrusive token-level logit masking.
 
 ---
