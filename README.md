@@ -175,7 +175,7 @@ python run_benchmark.py --sample-size 150 --train-size 400 --val-size 100 --epoc
 
 ## 🔬 Experimentation & The LIMA Alignment Principle
 
-A key question is why fine-tuning on **400 curated samples** achieved strong generalization rather than overfitting:
+Why fine-tuning on **400 curated samples** achieved strong generalization rather than overfitting???
 
 1. **Foundation Model Priors**: Pre-trained 7B VLMs (`Qwen2.5-VL-7B-Instruct`) already have learned representations of facial anatomy from web-scale pre-training.
 2. **Instruction Alignment vs Concept Learning**: The model does not need to learn what an eye or mouth is from scratch. It only needs to learn the **structured output format** and **Action Unit alignment**.
