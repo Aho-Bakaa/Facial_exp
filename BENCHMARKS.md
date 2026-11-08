@@ -85,10 +85,6 @@ The benchmark executed across **five strictly decoupled operational phases**, pe
 
 ### Phase 1: Dataset Verification & Biometric Priors
 - **Objective**: Ingest and audit 202,599 CelebA aligned face images, official 5-point landmarks, and partition tables.
-- **Key Discovery**: Empirical distributions computed across 1,500 continuous facial landmarks revealed:
-  $$\text{MAR} = \frac{\Vert{}\mathbf{p}_{\text{right\_mouth}} - \mathbf{p}_{\text{left\_mouth}}\Vert{}_2}{\Vert{}\mathbf{p}_{\text{right\_eye}} - \mathbf{p}_{\text{left\_eye}}\Vert{}_2} \quad (\mu = 2.1307, \, \sigma = 1.1719)$$• Eye Aspect Ratio (EAR):
-Palpebral aperture coefficient $(\mu = 0.2157, \, \sigma = 0.0179)$• Head Roll Cant Angle ($\theta$):
-Mean $\mu = -0.0534^\circ$, $\sigma = 2.795^\circ$
 - **Boundary Output**: Serialized to `benchmark_results/phase1_dataset_summary.json`.
 
 ### Phase 2: Zero-Shot Baseline Evaluation
