@@ -127,27 +127,23 @@ Throughout development, empirical obstacles forced critical architectural and en
 ```mermaid
 flowchart TD
     P1["Pivot 1: Local CPU Failure ──► Cloud Kaggle Dual T4 & ZeroGPU"]
-    P2["Pivot 2: CUHK Drive Quotas ──► Dynamic Cloud Crawling & Mounting"]
-    P3["Pivot 3: Aborted 1,500-Image Run ──► 400-Sample LIMA Stratification"]
-    P4["Pivot 4: Qwen 3B Backbone ──► 4-Bit NF4 Qwen 7B Backbone"]
-    P5["Pivot 5: 3.5h Retraining Cycle ──► Pre-Trained Kaggle Adapter Caching"]
-    P6["Pivot 6: Trie Delimiter Defect ──► O(1) JSONStructuralStopper"]
-    P7["Pivot 7: Naive Center Crop ──► Haar Cascade Anthropometric Oral Crop"]
-    P8["Pivot 8: PeftModel In-Place Patching ──► with peft_model.disable_adapter()"]
-    P9["Pivot 9: Gradio/Pydantic Crash ──► Gradio 5.16 + ZeroGPU Concurrency Queue"]
+    P2["Pivot 3: Aborted 1,500-Image Run ──► 400-Sample LIMA Stratification"]
+    P3["Pivot 4: Qwen 3B Backbone ──► 4-Bit NF4 Qwen 7B Backbone"]
+    P4["Pivot 5: 3.5h Retraining Cycle ──► Pre-Trained Kaggle Adapter Caching"]
+    P5["Pivot 6: Trie Delimiter Defect ──► O(1) JSONStructuralStopper"]
+    P6["Pivot 7: Naive Center Crop ──► Haar Cascade Anthropometric Oral Crop"]
+    P7["Pivot 8: PeftModel In-Place Patching ──► with peft_model.disable_adapter()"]
+    P8["Pivot 9: Gradio/Pydantic Crash ──► Gradio 5.16 + ZeroGPU Concurrency Queue"]
 
-    P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7 --> P8 --> P9
+    P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7 --> P8
 ```
 
 ### Pivot 1: Local CPU Execution Failure $\rightarrow$ Cloud GPU Migration
 - **Obstacle**: The local workstation lacked a dedicated CUDA GPU (`torch.cuda.is_available() == False`). Running inference on a 7B parameter multimodal model on CPU required >5 minutes per image. Furthermore, biometric heuristic fallbacks scaled MAR incorrectly, falsely flagging every uploaded face as smiling.
 - **Pivot**: Re-architected the entire codebase for automated cloud execution on Kaggle Dual Tesla T4 GPUs and Hugging Face ZeroGPU.
 
-### Pivot 2: Google Drive CelebA Quota Exhaustion $\rightarrow$ Cloud Discovery Layer
-- **Obstacle**: The official CUHK Google Drive links for the 1.4 GB CelebA dataset repeatedly returned HTTP 403 / "Download quota exceeded for this file".
-- **Pivot**: Built a dynamic filesystem discovery layer in `src/config.py` that recursively crawls `/kaggle/input`, locates mounted Kaggle datasets (`jessicali9530/celeba-dataset`), and establishes unified symlinks in `/kaggle/working/input_data`.
 
-### Pivot 3: Aborted 1,500-Sample Run $\rightarrow$ 400-Sample LIMA Alignment
+### Pivot 2: Aborted 1,500-Sample Run $\rightarrow$ 400-Sample LIMA Alignment
 - **Obstacle**: The initial fine-tuning loop was configured with `--train-size 1500` across 2 epochs. With 3 multi-scale crops per image, this demanded **4,500 forward/backward passes**. The progress bar logged:
   ```text
   QLoRA Epoch 1/2: 15% | 230/1500 [46:54 < 4:16:29, 12.12s/it]
@@ -155,15 +151,15 @@ flowchart TD
   Projected runtime exceeded **8 hours**, putting the run at severe risk of Kaggle's 9-hour timeout, and the script lacked step-wise intermediate checkpointing.
 - **Pivot**: We intentionally paused execution, re-architected the training pipeline with resilient step-level checkpoints (`step_50`, `step_100`), and calibrated the dataset to **400 curated, demographically stratified samples** under the LIMA paradigm. This cut training time to ~2.5 hours while achieving superior convergence.
 
-### Pivot 4: Model Architecture Upgrade (Qwen 3B $\rightarrow$ Qwen 7B)
+### Pivot 3: Model Architecture Upgrade (Qwen 3B $\rightarrow$ Qwen 7B)
 - **Obstacle**: Initial scaffolding used `Qwen2.5-VL-3B-Instruct` for minimal VRAM. However, empirical testing showed 3B frequently confused subtle Action Units (AU1 vs AU4) and struggled with balanced multi-level JSON output.
 - **Pivot**: Upgraded to **`Qwen2.5-VL-7B-Instruct`**. Using 4-bit NF4 double-quantization, the 7B model consumed only **3.04 GB VRAM**, fitting dual Tesla T4s with ample headroom while providing vastly superior zero-shot reasoning.
 
-### Pivot 5: 3.5-Hour Retraining Bottleneck $\rightarrow$ Adapter Caching
+### Pivot 4: 3.5-Hour Retraining Bottleneck $\rightarrow$ Adapter Caching
 - **Obstacle**: Re-running full 3.5-hour training runs just to debug evaluation metrics rapidly burned through Kaggle's 30-hour weekly GPU allocation.
 - **Pivot**: Packaged the serialized `qlora_adapter_final` weights (190.4 MB) into a public Kaggle dataset (`goofybhatoora/celeb-vlm-trained-adapter`) and added a `--skip-train` CLI flag. Subsequent evaluation runs restored the adapter in seconds, reducing iteration cycles to **1.5 hours**.
 
-### Pivot 6: The Delimiter Suppression Defect $\rightarrow$ $\mathcal{O}(1)$ `JSONStructuralStopper`
+### Pivot 5: The Delimiter Suppression Defect $\rightarrow$ $\mathcal{O}(1)$ `JSONStructuralStopper`
 - **Obstacle**: In Version 12, the evaluation run failed every single sample at line 11:
   ```text
   JSONDecodeError: Expecting ':' delimiter: line 11 column 3 (char 242)
@@ -171,17 +167,17 @@ flowchart TD
   *Forensic Cause*: A token-level prefix-trie automaton intended to force discrete enum values searched for quotation marks. In our schema, `"teeth_exposed"` is a JSON **boolean** (`true`), not a string. The trie skipped past the unquoted boolean, matched the quote before `"head_orientation"`, assumed the generator was inside an enum, and masked out all tokens except `true` and `false`. The model was physically barred from emitting colons or property keys.
 - **Pivot**: Replaced the intrusive token masking with **`JSONStructuralStopper`**, a lightweight logits processor that only monitors the balance of root opening and closing braces (`count("{") <= count("}")`). This eliminated token masking overhead and boosted schema conformance to **100.00% (150/150 samples)**.
 
-### Pivot 7: Oral Bounding Box Neck-Capture Bug $\rightarrow$ Anthropometric Haar Cascades
+### Pivot 6: Oral Bounding Box Neck-Capture Bug $\rightarrow$ Anthropometric Haar Cascades
 - **Obstacle**: When testing tall portrait or passport photos ($3:4$ aspect ratio) in the live demo, the oral bounding box landed on the subject's shirt collar and neck rather than their mouth.
   *Root Cause*: The initial demo heuristic assumed the mouth was always centered at $y = h/2$.
 - **Pivot**: Replaced the center heuristic with OpenCV Haar Cascade face detection (`haarcascade_frontalface_default.xml`). Anthropometric portrait bounds were strictly pinned between **$62\% - 92\%$ of detected face height**, ensuring the oral crop strictly encapsulates the lips and chin regardless of aspect ratio.
 
-### Pivot 8: PeftModel In-Place Patching Bug in Live Evaluator
+### Pivot 7: PeftModel In-Place Patching Bug in Live Evaluator
 - **Obstacle**: When comparing the zero-shot baseline and fine-tuned model side-by-side in the live demo, both models returned identical predictions.
   *Root Cause*: Calling `PeftModel.from_pretrained(base_model, ...)` patches the base model's linear layers in-place. Subsequent calls to `base_model.generate()` still executed the LoRA adapter.
 - **Pivot**: Explicitly wrapped baseline generation in `with peft_model.disable_adapter():`, ensuring LoRA weights are disabled during baseline inference.
 
-### Pivot 9: Hugging Face ZeroGPU API Failure $\rightarrow$ Gradio 5.16 & Concurrency Queue
+### Pivot 8: Hugging Face ZeroGPU API Failure $\rightarrow$ Gradio 5.16 & Concurrency Queue
 - **Obstacle**: The Hugging Face Spaces deployment failed with "No API found" and crashed when processing requests.
   *Root Cause 1*: Gradio 5.9 had a known incompatibility with Pydantic 2.10 (`TypeError: argument of type 'bool' is not iterable`).
   *Root Cause 2*: Hugging Face ZeroGPU requires an active task queue to allocate dynamic `@spaces.GPU` slices.
