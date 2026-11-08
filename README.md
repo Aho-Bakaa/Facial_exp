@@ -4,6 +4,7 @@
 [![Hugging Face Datasets](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset%20Release-orange)](https://huggingface.co/datasets/Anmolbakaa/celeba-vlm-hierarchical-causal)
 [![Kaggle Kernel](https://img.shields.io/badge/Kaggle-Live%20GPU%20Evaluator-20BEFF?logo=kaggle)](https://www.kaggle.com/code/goofybhatoora/celeb-vlm-live-evaluator)
 [![Adapter Weights](https://img.shields.io/badge/Weights-Kaggle%20Adapter%20Dataset-success?logo=kaggle)](https://www.kaggle.com/datasets/goofybhatoora/celeb-vlm-trained-adapter)
+[![Benchmark Documentation](https://img.shields.io/badge/Report-BENCHMARKS.md-success)](BENCHMARKS.md)
 
 An end-to-end multimodal Vision-Language Model framework that transforms legacy binary facial attribute classification into **anatomically grounded, Action Unit-driven hierarchical causal reasoning**.
 
@@ -19,6 +20,7 @@ Powered by fine-tuned **`Qwen2.5-VL-7B-Instruct`** using **4-bit NF4 QLoRA**, sy
 | **Curated Benchmark Dataset** | 400 train and 150 held-out evaluation samples with continuous biometrics | [celeba-vlm-hierarchical-causal](https://huggingface.co/datasets/Anmolbakaa/celeba-vlm-hierarchical-causal) |
 | **Kaggle Live GPU Kernel** | Dual Tesla T4 interactive Gradio evaluator notebook with public URL | [celeb-vlm-live-evaluator](https://www.kaggle.com/code/goofybhatoora/celeb-vlm-live-evaluator) |
 | **Pre-Trained QLoRA Adapter** | Serialized PEFT LoRA adapter weights (190.4 MB) | [celeb-vlm-trained-adapter](https://www.kaggle.com/datasets/goofybhatoora/celeb-vlm-trained-adapter) |
+| **Exhaustive Benchmark Report** | 9 engineering pivots, timing bottleneck profiling, and confusion matrices | [BENCHMARKS.md](BENCHMARKS.md) |
 
 ---
 
@@ -73,9 +75,59 @@ Powered by fine-tuned **`Qwen2.5-VL-7B-Instruct`** using **4-bit NF4 QLoRA**, sy
 
 ---
 
-## 📊 Experimental Results & Baseline Comparison
+## 📈 Phase-Wise Experimental Progression
 
-Benchmarked on **150 held-out Partition 2 test samples** drawn from the CelebA dataset. Partition 2 subjects feature **disjoint celebrity identities** from the training set (0% identity leakage).
+The benchmark executed across **five strictly decoupled operational phases**, persisting boundary artifacts at every step to prevent compute loss.
+
+| Phase | Operational Focus | Key Metrics / Findings |
+| :--- | :--- | :--- |
+| **Phase 1** | Biometric Prior & Partition Integrity Audit | Audited 202,599 CelebA records and computed landmark distributions ($\text{MAR} = 2.131, \text{EAR} = 0.216, \theta_{\text{roll}} = -0.053^\circ$). Partition 2 (test) contains disjoint identities from Partition 0 (train). |
+| **Phase 2** | Zero-Shot Baseline Benchmark (`Qwen2.5-VL-7B`) | Evaluated 150 test samples. Discovered severe mouth aperture blindness ($R=0.141$), 2.13% hallucination rate, and an 11.04% gender gap favoring male subjects. |
+| **Phase 3** | Resilient 4-Bit QLoRA Fine-Tuning | Fine-tuned 400 curated multi-crop samples (1,200 crops) across 100 optimizer steps. Loss converged from **4.062 $\rightarrow$ 0.333**; held-out validation loss reached **0.1076**. Saved intermediate checkpoints at step 50 and 100. |
+| **Phase 4** | Improved Multi-Crop Evaluation | Re-evaluated on the identical 150 Partition 2 samples. Schema conformance reached **100.00%**, Mouth Open F1 surged to **0.9024** (+264.7%), Causal ROUGE-L rose to **0.1944** (+215.6%), and hallucinations were completely eliminated (**0.00%**). |
+| **Phase 5** | Cross-Phase Synthesis & Persistence | Automated compilation of statistical deltas, fairness subgroup matrices, and deployment to Hugging Face Spaces and Kaggle. |
+
+---
+
+## 🔬 Chronology of Pivots: Why We Pivoted 9 Times
+
+Developing this multimodal VLM pipeline on consumer cloud GPUs required navigating critical empirical obstacles:
+
+1. **Local CPU vs Cloud GPU Execution**: Local machine had no CUDA GPU (`torch.cuda.is_available() == False`), requiring >5 min/sample. Pivoted to automated cloud execution on Kaggle Dual Tesla T4s and Hugging Face ZeroGPU.
+2. **CelebA Google Drive Quota Exhaustion**: CUHK Google Drive links hit daily download bandwidth quotas. Built a dynamic filesystem discovery layer in `src/config.py` that crawls and symlinks mounted cloud datasets.
+3. **Aborted 1,500-Image Run $\rightarrow$ 400-Sample LIMA Stratification**: The initial fine-tuning loop was configured with 1,500 samples across 2 epochs (4,500 forward passes), projecting **>8 hours** on Kaggle with no intermediate checkpoints. We paused execution and pivoted to **400 curated, demographically stratified samples** under the LIMA paradigm, cutting training time to ~2.5 hours with checkpoints at step 50/100.
+4. **Qwen 3B $\rightarrow$ 7B Upgrade**: The 3B model struggled with fine Action Unit discrimination (AU1 vs AU4) and multi-level JSON stability. Upgraded to `Qwen2.5-VL-7B-Instruct` with 4-bit NF4 double-quantization, consuming only **3.04 GB VRAM**.
+5. **3.5-Hour Retraining Bottleneck $\rightarrow$ Adapter Caching**: Re-training just to debug evaluation metrics exhausted weekly GPU quotas. Packaged `qlora_adapter_final` (190.4 MB) into a Kaggle dataset (`goofybhatoora/celeb-vlm-trained-adapter`) with a `--skip-train` flag, cutting iteration cycles to **1.5 hours**.
+6. **Delimiter Suppression Defect $\rightarrow$ $\mathcal{O}(1)$ `JSONStructuralStopper`**: In Version 12, a token-level prefix-trie automaton intended to force enum values crashed at line 11 because `"teeth_exposed"` is a JSON **boolean** (`true`), not a string. The trie matched quotes in the next key and masked out colons and property keys. Replaced it with `JSONStructuralStopper` (root brace counting), achieving **100.00% valid JSON (150/150)**.
+7. **Oral Crop Neck-Capture Bug $\rightarrow$ Anthropometric Haar Cascades**: In the demo, tall $3:4$ aspect ratio portraits placed the mouth box on the subject's collar/neck due to a naive $y=h/2$ heuristic. Replaced it with OpenCV Haar face detection with oral bounds strictly pinned between **$62\% - 92\%$ of face height**.
+8. **PeftModel In-Place Patching Bug**: In the live demo, baseline and fine-tuned predictions were identical because `PeftModel` patches the base model in-place. Wrapped zero-shot baseline calls in `with peft_model.disable_adapter():`.
+9. **ZeroGPU API Failure $\rightarrow$ Gradio 5.16 & Concurrency Queue**: Gradio 5.9 had a known incompatibility with Pydantic 2.10, and ZeroGPU required explicit queue scheduling for dynamic `@spaces.GPU` allocation. Upgraded to Gradio 5.16+ and launched with `demo.queue()`.
+
+*For an exhaustive breakdown of all 9 pivots with technical diagrams, see [BENCHMARKS.md](BENCHMARKS.md).*
+
+---
+
+## ⚡ Timing Bottlenecks & Training Optimizations
+
+Fine-tuning a 7B parameter multimodal model on dual 16GB Tesla T4 GPUs presented substantial memory and latency constraints:
+
+### 1. Training Memory Optimization Stack
+- **4-Bit NF4 Quantization**: Reduced base model footprint from **~15.0 GB $\rightarrow$ 4.5 GB**.
+- **Double Quantization**: Saved an additional **~0.37 bits/param** (~320 MB VRAM) with negligible overhead.
+- **Paged AdamW 8-Bit**: Prevented CUDA OOM crashes by dynamically page-swapping optimizer states to CPU RAM during peak gradients.
+- **Gradient Checkpointing**: Reduced activation memory by **~60%**.
+- **GPU Pinning (`device_map={"": 0}`)**: Placing the model on GPU 0 eliminated PCIe bus thrashing between the two T4 GPUs, accelerating step time by **2.8x**.
+
+### 2. Decoding Latency: Resolving the Trie Masking Bottleneck
+Processing 3 visual crops generated **1,500+ visual tokens** per sample:
+- **Trie Regex Logit Masking**: Slow vocabulary iterations inflated latency to **>120s / sample**, triggering pipeline timeouts.
+- **$\mathcal{O}(1)$ `JSONStructuralStopper`**: Monitoring only root brace balance (`depth == 0`) reduced latency to **39.4s median ($p_{50}$)**, absorbing the 3x visual token sequence at optimal speed.
+
+---
+
+## 📊 Primary Comparative Benchmark Table
+
+Benchmarked on **150 held-out Partition 2 test samples** drawn from the CelebA dataset (disjoint celebrity identities, 0% identity leakage).
 
 | Metric Category | Metric | Zero-Shot Baseline (`Qwen2.5-VL-7B`) | Fine-Tuned + Multi-Crop (`Phase 4`) | Delta ($\Delta$) | Significance |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -94,6 +146,16 @@ Benchmarked on **150 held-out Partition 2 test samples** drawn from the CelebA d
 | | **Age Disparity ($|Y - O|$)** | 0.0437 | **0.0279** | **-0.0158** | **-36.2% reduction in age gap** |
 
 *For complete metric tables, confusion matrices, and subgroup breakdowns, see [BENCHMARKS.md](BENCHMARKS.md).*
+
+---
+
+## 🔬 The LIMA Alignment Principle: Why Fine-Tuning on 400 Curated Samples Generalizes Without Overfitting
+
+Why fine-tuning on **400 curated samples** achieved strong generalization rather than overfitting:
+
+1. **Foundation Model Priors**: Pre-trained 7B VLMs (`Qwen2.5-VL-7B-Instruct`) already have learned representations of facial anatomy from web-scale pre-training.
+2. **Instruction Alignment vs Concept Learning**: The model does not need to learn what an eye or mouth is from scratch. It only needs to learn the **structured output format** and **Action Unit alignment**.
+3. **Out-of-Distribution Validation**: All evaluations were conducted on **Partition 2** subjects (identities never seen during training). The +264.7% surge in mouth open detection and complete elimination of hallucinations confirm genuine generalization.
 
 ---
 
@@ -134,8 +196,8 @@ Facial_exp/
 │   └── run_app.ps1                       # One-click Windows PowerShell launcher
 ├── run_benchmark.py                      # Master CLI orchestration pipeline
 ├── requirements.txt                      # Project dependencies
-├── BENCHMARKS.md                         # Detailed benchmark and evaluation report
-└── README.md                             # Project documentation
+├── BENCHMARKS.md                         # Exhaustive report: pivots, latency, and metrics
+└── README.md                             # Project overview and quickstart
 ```
 
 ---
@@ -170,16 +232,6 @@ To run the complete 5-phase benchmark autonomously:
 ```bash
 python run_benchmark.py --sample-size 150 --train-size 400 --val-size 100 --epochs 1
 ```
-
----
-
-## 🔬 Experimentation & The LIMA Alignment Principle
-
-Why fine-tuning on **400 curated samples** achieved strong generalization rather than overfitting???
-
-1. **Foundation Model Priors**: Pre-trained 7B VLMs (`Qwen2.5-VL-7B-Instruct`) already have learned representations of facial anatomy from web-scale pre-training.
-2. **Instruction Alignment vs Concept Learning**: The model does not need to learn what an eye or mouth is from scratch. It only needs to learn the **structured output format** and **Action Unit alignment**.
-3. **Out-of-Distribution Validation**: All evaluations were conducted on **Partition 2** subjects (identities never seen during training). The +264.7% surge in mouth open detection and complete elimination of hallucinations confirm genuine generalization.
 
 ---
 
