@@ -1,0 +1,65 @@
+{
+  "status": "verified",
+  "timestamp": "2026-11-07 14:19:44",
+  "total_records": 202599,
+  "partitions": {
+    "train_count": 162770,
+    "val_count": 19867,
+    "test_count": 19962
+  },
+  "target_attribute_prevalence": {
+    "Smiling": {
+      "positive_samples": 97669,
+      "total_samples": 202599,
+      "prevalence_pct": 48.21
+    },
+    "Male": {
+      "positive_samples": 84434,
+      "total_samples": 202599,
+      "prevalence_pct": 41.68
+    },
+    "Young": {
+      "positive_samples": 156734,
+      "total_samples": 202599,
+      "prevalence_pct": 77.36
+    },
+    "Eyeglasses": {
+      "positive_samples": 13193,
+      "total_samples": 202599,
+      "prevalence_pct": 6.51
+    },
+    "Narrow_Eyes": {
+      "positive_samples": 23329,
+      "total_samples": 202599,
+      "prevalence_pct": 11.51
+    },
+    "Arched_Eyebrows": {
+      "positive_samples": 54090,
+      "total_samples": 202599,
+      "prevalence_pct": 26.7
+    },
+    "Mouth_Slightly_Open": {
+      "positive_samples": 97942,
+      "total_samples": 202599,
+      "prevalence_pct": 48.34
+    },
+    "Bangs": {
+      "positive_samples": 30709,
+      "total_samples": 202599,
+      "prevalence_pct": 15.16
+    }
+  },
+  "landmark_biometric_priors": {
+    "mar_mean": 2.1307,
+    "mar_std": 1.1719,
+    "ear_mean": 0.2157,
+    "ear_std": 0.0179,
+    "head_roll_mean_deg": -0.0534,
+    "head_roll_std_deg": 2.795
+  },
+  "multi_crop_rois": [
+    "global_portrait_224x224",
+    "periorbital_112x112",
+    "oral_112x112"
+  ]
+}

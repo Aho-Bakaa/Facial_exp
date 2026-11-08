@@ -1,0 +1,156 @@
+{
+  "summary_metrics": {
+    "model_name": "Baseline (Qwen2.5-VL-3B Zero-Shot)",
+    "total_samples": 150,
+    "valid_json_count": 141,
+    "valid_json_rate": 94.0,
+    "conformance_rate": 0.94,
+    "complete_fields_count": 141,
+    "field_completeness_rate": 94.0,
+    "parsing_errors": [
+      "sample: Failed JSON parsing",
+      "sample: Failed JSON parsing",
+      "sample: Failed JSON parsing",
+      "sample: Failed JSON parsing",
+      "sample: Failed JSON parsing",
+      "sample: Failed JSON parsing",
+      "sample: Failed JSON parsing",
+      "sample: Failed JSON parsing",
+      "sample: Failed JSON parsing"
+    ],
+    "perceptual_metrics": {
+      "Narrow_Eyes": {
+        "attribute_name": "Narrow_Eyes",
+        "true_positives": 0,
+        "false_positives": 0,
+        "false_negatives": 20,
+        "true_negatives": 121,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 1.0,
+        "f1_score": 0.0,
+        "balanced_accuracy": 0.5
+      },
+      "Smiling": {
+        "attribute_name": "Smiling",
+        "true_positives": 36,
+        "false_positives": 2,
+        "false_negatives": 37,
+        "true_negatives": 66,
+        "precision": 0.9473684210526315,
+        "recall": 0.4931506849315068,
+        "specificity": 0.9705882352941176,
+        "f1_score": 0.6486486486486486,
+        "balanced_accuracy": 0.7318694601128122
+      },
+      "Eyeglasses": {
+        "attribute_name": "Eyeglasses",
+        "true_positives": 7,
+        "false_positives": 0,
+        "false_negatives": 1,
+        "true_negatives": 133,
+        "precision": 1.0,
+        "recall": 0.875,
+        "specificity": 1.0,
+        "f1_score": 0.9333333333333333,
+        "balanced_accuracy": 0.9375
+      },
+      "Arched_Eyebrows": {
+        "attribute_name": "Arched_Eyebrows",
+        "true_positives": 0,
+        "false_positives": 0,
+        "false_negatives": 36,
+        "true_negatives": 105,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 1.0,
+        "f1_score": 0.0,
+        "balanced_accuracy": 0.5
+      },
+      "Mouth_Slightly_Open": {
+        "attribute_name": "Mouth_Slightly_Open",
+        "true_positives": 12,
+        "false_positives": 0,
+        "false_negatives": 73,
+        "true_negatives": 56,
+        "precision": 1.0,
+        "recall": 0.1411764705882353,
+        "specificity": 1.0,
+        "f1_score": 0.24742268041237114,
+        "balanced_accuracy": 0.5705882352941176
+      },
+      "Bangs": {
+        "attribute_name": "Bangs",
+        "true_positives": 0,
+        "false_positives": 1,
+        "false_negatives": 20,
+        "true_negatives": 120,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 0.9917355371900827,
+        "f1_score": 0.0,
+        "balanced_accuracy": 0.49586776859504134
+      }
+    },
+    "macro_f1": 0.3049007770657255,
+    "macro_precision": 0.49122807017543857,
+    "macro_recall": 0.25155452591995703,
+    "macro_balanced_accuracy": 0.6226375773336619,
+    "male_macro_f1": 0.3467377260981912,
+    "female_macro_f1": 0.23633156966490299,
+    "gender_disparity_delta": 0.11040615643328822,
+    "young_macro_f1": 0.28601634683724236,
+    "older_macro_f1": 0.32974910394265233,
+    "age_disparity_delta": 0.04373275710540997,
+    "pose_evaluated_samples": 141,
+    "pose_exact_matches": 34,
+    "pose_consistency_rate": 24.113475177304963,
+    "mean_yaw_error": 0.0,
+    "rouge_l_evidence_f1": 0.06911489361702128,
+    "rouge_l_cause_f1": 0.05400283687943262,
+    "mean_causal_rouge_f1": 0.06155886524822695,
+    "causal_evaluated_samples": 141,
+    "faithfulness_score": 99.29787234042553,
+    "causal_faithfulness_ratio": 0.9929787234042553,
+    "hallucination_rate": 2.127659574468085,
+    "hallucination_instances": [
+      {
+        "image_name": "sample",
+        "contradictions": [
+          "Hallucinated active smile / AU12 contraction when subject is not smiling."
+        ],
+        "visual_evidence": "The wide-open eyes and mouth suggest strong emotional expression. The visible teeth indicate a smile, which is typically associated with happiness.",
+        "inferred_cause": "The individual is likely experiencing a moment of joy or amusement, possibly due to a positive event or interaction.",
+        "confidence_score": 0.9
+      },
+      {
+        "image_name": "sample",
+        "contradictions": [
+          "Hallucinated eye squinting when eyes are open."
+        ],
+        "visual_evidence": "The wide-open eyes and mouth reveal strong activation of AU6 (eyebrow raiser) and AU12 (lip corner puller), indicating a joyful expression.",
+        "inferred_cause": "The subject is likely experiencing a moment of happiness or amusement due to a positive interaction or a humorous situation.",
+        "confidence_score": 0.9
+      },
+      {
+        "image_name": "sample",
+        "contradictions": [
+          "Hallucinated active smile / AU12 contraction when subject is not smiling."
+        ],
+        "visual_evidence": "The wide-open eyes suggest excitement or surprise, and the wide-open mouth with visible teeth indicates a broad smile or laughter.",
+        "inferred_cause": "The individual is likely reacting to something amusing or surprising, possibly due to a humorous situation or a joke.",
+        "confidence_score": 0.8
+      }
+    ],
+    "total_inference_time_sec": 3898.3136376760017,
+    "mean_latency_sec": 25.98875758450668,
+    "p50_latency_ms": 25808.432370499984,
+    "p95_latency_ms": 27322.150518749888,
+    "mean_ttft_sec": 25.977873024966655,
+    "tokens_per_second": 8.210729811642791,
+    "peak_vram_gb": 2.94710636138916
+  },
+  "sample_size": 150,
+  "model_name": "Baseline (Qwen2.5-VL-3B Zero-Shot)",
+  "timestamp": "2026-11-07 15:27:05"
+}
