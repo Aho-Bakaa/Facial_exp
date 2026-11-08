@@ -21,7 +21,7 @@ All experimental evaluations were conducted across **150 held-out test portraits
 
 | Metric Dimension | Evaluation Metric | Zero-Shot Baseline (`Qwen2.5-VL-7B`) | Fine-Tuned + Multi-Crop (`Phase 4`) | Absolute Delta ($\Delta$) | Relative Impact |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Structural Validity** | **Schema Conformance Rate** | 94.00% (141 / 150) | **100.00% (150 / 150)** | **+6.00%** | **Perfect RFC 8259 Conformance (0 parse errors)** |
+| **Structural Validity** | **Schema Conformance Rate** | (141 / 150) | (150 / 150) | **+6.00%** | **Perfect RFC 8259 Conformance (0 parse errors)** |
 | **Attribute Detection** | **CelebA Macro-F1** | 0.3049 | **0.4772** | **+0.1723** | **+56.5% Relative Boost** |
 | | • *Smiling F1* | 0.6486 (P=0.947, R=0.493) | **0.9079 (P=0.920, R=0.896)** | +0.2593 | **+39.9% Relative Gain** |
 | | • *Mouth Slightly Open F1* | 0.2474 (P=1.000, R=0.141) | **0.9024 (P=0.987, R=0.831)** | +0.6550 | **+264.7% Surge; fixes baseline recall failure** |
@@ -86,9 +86,9 @@ The benchmark executed across **five strictly decoupled operational phases**, pe
 ### Phase 1: Dataset Verification & Biometric Priors
 - **Objective**: Ingest and audit 202,599 CelebA aligned face images, official 5-point landmarks, and partition tables.
 - **Key Discovery**: Empirical distributions computed across 1,500 continuous facial landmarks revealed:
-  - $\text{Mouth Aspect Ratio (MAR)} = \frac{\|\mathbf{p}_{\text{right\_mouth}} - \mathbf{p}_{\text{left\_mouth}}\|_2}{\|\mathbf{p}_{\text{right\_eye}} - \mathbf{p}_{\text{left\_eye}}\|_2}$: Mean $\mu = 2.1307$, $\sigma = 1.1719$.
-  - $\text{Eye Aspect Ratio (EAR)}$: Mean $\mu = 0.2157$, $\sigma = 0.0179$.
-  - $\text{Head Roll Cant Angle } \theta$: Mean $\mu = -0.0534^\circ$, $\sigma = 2.795^\circ$.
+  $$\text{MAR} = \frac{\Vert{}\mathbf{p}_{\text{right\_mouth}} - \mathbf{p}_{\text{left\_mouth}}\Vert{}_2}{\Vert{}\mathbf{p}_{\text{right\_eye}} - \mathbf{p}_{\text{left\_eye}}\Vert{}_2} \quad (\mu = 2.1307, \, \sigma = 1.1719)$$• Eye Aspect Ratio (EAR):
+Palpebral aperture coefficient $(\mu = 0.2157, \, \sigma = 0.0179)$• Head Roll Cant Angle ($\theta$):
+Mean $\mu = -0.0534^\circ$, $\sigma = 2.795^\circ$
 - **Boundary Output**: Serialized to `benchmark_results/phase1_dataset_summary.json`.
 
 ### Phase 2: Zero-Shot Baseline Evaluation
